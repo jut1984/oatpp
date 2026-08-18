@@ -109,6 +109,11 @@ public:
       bool required = false;
 
       /**
+       * Nullable.
+       */
+      bool nullable = false;
+
+      /**
        * Type selector.
        * &l:Property::TypeSelector;.
        */

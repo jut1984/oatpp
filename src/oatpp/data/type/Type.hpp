@@ -32,6 +32,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <type_traits>
 
 namespace oatpp { namespace data { namespace type {
 
@@ -617,6 +618,19 @@ public: \
     return *this; \
   } \
 
+
+}}}
+
+namespace oatpp { namespace data { namespace type {
+
+template<typename T, typename = void>
+struct __class__has_class_get_type : std::false_type {};
+
+template<typename T>
+struct __class__has_class_get_type<T, decltype(void(T::Class::getType()))> : std::true_type {};
+
+template<typename T>
+inline constexpr bool is_class_with_class_get_type_v = __class__has_class_get_type<T>::value;
 
 }}}
 
