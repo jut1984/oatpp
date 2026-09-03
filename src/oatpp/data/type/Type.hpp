@@ -582,7 +582,14 @@ Wrapper ObjectWrapper<T, Clazz>::cast() const {
 
 template <class T, class Clazz>
 void ObjectWrapper<T, Clazz>::checkType(const Type* _this, const Type* other) {
-  if(!_this->extends(other)) {
+  /**
+   * The assigned value type must extend the stored type (up-cast only).
+   * Note: the previous check was inverted - `_this->extends(other)`,
+   * which accepted down-casts (assigning a base-class value to a wrapper holding a
+   * derived type label, later reinterpreting it via that label) and thus caused type
+   * confusion. It also wrongly rejected valid derived-to-base assignments.
+  */
+  if(!other->extends(_this)) {
     throw std::runtime_error("[oatpp::data::type::ObjectWrapper::checkType()]: Error. "
                              "Type mismatch: stored '" + std::string(_this->classId.name) + "' vs "
                              "assigned '" + std::string(other->classId.name) + "'.");
