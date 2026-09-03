@@ -557,8 +557,21 @@ public:
 template <class T, class Clazz>
 template<class Wrapper>
 Wrapper ObjectWrapper<T, Clazz>::cast() const {
-  if(!Wrapper::Class::getType()->extends(m_valueType)) {
-    if(Wrapper::Class::getType() != __class::Void::getType() && m_valueType != __class::Void::getType()) {
+  /**
+   * The value type must extend the target type (up-cast only).
+   * Note: the previous check was inverted - `Wrapper::Class::getType()->extends(m_valueType)`,
+   * which accepted down-casts (e.g. a base-class pointer cast to a derived wrapper) and thus
+   * caused type confusion. It also wrongly rejected valid derived-to-base casts.
+  */
+  if(!m_valueType->extends(Wrapper::Class::getType())) {
+    /**
+     * Cast to `Void` is always safe - it's a type erasure (shared_ptr<void>).
+     * Cast from an untyped (`Void`-typed) value is only safe while the pointer is null:
+     * a non-null pointer with no type information must not be reinterpreted.
+    */
+    if(Wrapper::Class::getType() != __class::Void::getType() &&
+       (m_valueType != __class::Void::getType() || m_ptr != nullptr))
+    {
       throw std::runtime_error("[oatpp::data::type::ObjectWrapper::cast()]: Error. Invalid cast "
                                "from '" + std::string(m_valueType->classId.name) + "' to '" +
                                std::string(Wrapper::Class::getType()->classId.name) + "'.");
